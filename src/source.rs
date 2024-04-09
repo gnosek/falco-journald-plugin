@@ -37,7 +37,7 @@ impl SourcePluginInstance for JournalFollowInstance {
 impl SourcePlugin for JournalFollowPlugin {
     type Instance = JournalFollowInstance;
     const EVENT_SOURCE: &'static CStr = c"journal";
-    const PLUGIN_ID: u32 = 999;
+    const PLUGIN_ID: u32 = 17;
 
     fn open(&mut self, _params: Option<&str>) -> Result<Self::Instance, Error> {
         Ok(JournalFollowInstance)
