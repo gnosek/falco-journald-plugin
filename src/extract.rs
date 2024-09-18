@@ -1,11 +1,8 @@
 use crate::JournalFollowPlugin;
 use falco_plugin::anyhow::{anyhow, Error};
 use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E as PluginEvent};
-use falco_plugin::extract::{
-    field, EventInput, ExtractArgType, ExtractFieldInfo, ExtractFieldRequestArg, ExtractPlugin,
-    ExtractRequest,
-};
-use std::ffi::CString;
+use falco_plugin::extract::{field, EventInput, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
+use std::ffi::{CStr, CString};
 use systemd::JournalRecord;
 
 impl JournalFollowPlugin {
@@ -32,11 +29,7 @@ impl JournalFollowPlugin {
         }
     }
 
-    fn extract_message(
-        &mut self,
-        req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<CString, Error> {
+    fn extract_message(&mut self, req: ExtractRequest<Self>) -> Result<CString, Error> {
         let record = self.parse_record(req.context, req.event)?;
 
         let message = record
@@ -46,11 +39,7 @@ impl JournalFollowPlugin {
         Ok(CString::new(message)?)
     }
 
-    fn extract_priority(
-        &mut self,
-        req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<u64, Error> {
+    fn extract_priority(&mut self, req: ExtractRequest<Self>) -> Result<u64, Error> {
         let record = self.parse_record(req.context, req.event)?;
 
         let s = record
@@ -59,12 +48,8 @@ impl JournalFollowPlugin {
         Ok(s.parse()?)
     }
 
-    fn extract_priority_str(
-        &mut self,
-        req: ExtractRequest<Self>,
-        arg: ExtractFieldRequestArg,
-    ) -> Result<CString, Error> {
-        let prio = self.extract_priority(req, arg)?;
+    fn extract_priority_str(&mut self, req: ExtractRequest<Self>) -> Result<CString, Error> {
+        let prio = self.extract_priority(req)?;
 
         let prio = match prio {
             0 => "emerg",
@@ -81,11 +66,7 @@ impl JournalFollowPlugin {
         Ok(CString::new(prio.as_bytes().to_vec())?)
     }
 
-    fn extract_facility(
-        &mut self,
-        req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<u64, Error> {
+    fn extract_facility(&mut self, req: ExtractRequest<Self>) -> Result<u64, Error> {
         let record = self.parse_record(req.context, req.event)?;
 
         let s = record
@@ -94,12 +75,8 @@ impl JournalFollowPlugin {
         Ok(s.parse()?)
     }
 
-    fn extract_facility_str(
-        &mut self,
-        req: ExtractRequest<Self>,
-        arg: ExtractFieldRequestArg,
-    ) -> Result<CString, Error> {
-        let fac = self.extract_facility(req, arg)?;
+    fn extract_facility_str(&mut self, req: ExtractRequest<Self>) -> Result<CString, Error> {
+        let fac = self.extract_facility(req)?;
 
         let fac = match fac {
             0 => "kern",
@@ -129,11 +106,7 @@ impl JournalFollowPlugin {
         Ok(CString::new(fac.as_bytes().to_vec())?)
     }
 
-    fn extract_transport(
-        &mut self,
-        req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<CString, Error> {
+    fn extract_transport(&mut self, req: ExtractRequest<Self>) -> Result<CString, Error> {
         let record = self.parse_record(req.context, req.event)?;
 
         let message = record
@@ -143,15 +116,8 @@ impl JournalFollowPlugin {
         Ok(CString::new(message)?)
     }
 
-    fn extract_field(
-        &mut self,
-        req: ExtractRequest<Self>,
-        arg: ExtractFieldRequestArg,
-    ) -> Result<CString, Error> {
+    fn extract_field(&mut self, req: ExtractRequest<Self>, arg: &CStr) -> Result<CString, Error> {
         let record = self.parse_record(req.context, req.event)?;
-        let ExtractFieldRequestArg::String(arg) = arg else {
-            return Err(anyhow!("Unexpected argument {:?}", arg));
-        };
         let arg = arg.to_str()?;
 
         let field = record
@@ -173,6 +139,6 @@ impl ExtractPlugin for JournalFollowPlugin {
         field("journal.facility", &Self::extract_facility),
         field("journal.facility_str", &Self::extract_facility_str),
         field("journal.transport", &Self::extract_transport),
-        field("journal.field", &Self::extract_field).with_arg(ExtractArgType::RequiredKey),
+        field("journal.field", &Self::extract_field),
     ];
 }

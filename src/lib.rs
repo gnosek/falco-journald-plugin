@@ -52,6 +52,6 @@ impl Plugin for JournalFollowPlugin {
     }
 }
 
-plugin!(3;3;0 => JournalFollowPlugin);
+plugin!(JournalFollowPlugin);
 source_plugin!(JournalFollowPlugin);
 extract_plugin!(JournalFollowPlugin);
