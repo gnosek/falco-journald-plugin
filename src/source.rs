@@ -1,9 +1,8 @@
 use crate::JournalFollowPlugin;
-use falco_event::events::types::PPME_PLUGINEVENT_E as PluginEvent;
 use falco_plugin::anyhow::{anyhow, Error};
-use falco_plugin::api::ss_plugin_event_input as EventInput;
-use falco_plugin::source::{EventBatch, SourcePlugin, SourcePluginInstance};
-use falco_plugin::{EventInputExt, FailureReason};
+use falco_plugin::event::events::types::PPME_PLUGINEVENT_E as PluginEvent;
+use falco_plugin::source::{EventBatch, EventInput, SourcePlugin, SourcePluginInstance};
+use falco_plugin::FailureReason;
 use std::ffi::{CStr, CString};
 use std::time::Duration;
 

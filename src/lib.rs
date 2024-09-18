@@ -1,8 +1,9 @@
 use std::ffi::CStr;
 
 use falco_plugin::anyhow::Error;
-use falco_plugin::base::{InitInput, Json, Plugin};
-use falco_plugin::{extract_plugin, plugin, source_plugin, FailureReason};
+use falco_plugin::base::{Json, Plugin};
+use falco_plugin::tables::TablesInput;
+use falco_plugin::{extract_plugin, plugin, source_plugin};
 use systemd::journal::OpenOptions;
 use systemd::Journal;
 
@@ -37,16 +38,13 @@ impl Plugin for JournalFollowPlugin {
     const CONTACT: &'static CStr = c"rust@localdomain.pl";
     type ConfigType = Json<JournalFollowConfig>;
 
-    fn new(_input: &InitInput, config: Self::ConfigType) -> Result<Self, FailureReason> {
-        let config = config.into_inner();
-        let journal = Self::open_journal(config).map_err(|_| FailureReason::Failure)?;
+    fn new(_input: Option<&TablesInput>, Json(config): Self::ConfigType) -> Result<Self, Error> {
+        let journal = Self::open_journal(config)?;
 
         Ok(Self { journal })
     }
 
-    fn set_config(&mut self, config: Self::ConfigType) -> Result<(), Error> {
-        let config = config.into_inner();
-
+    fn set_config(&mut self, Json(config): Self::ConfigType) -> Result<(), Error> {
         clear_filter(&mut self.journal)?;
         apply_filter(&mut self.journal, config.filter.as_slice())?;
 

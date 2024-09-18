@@ -9,8 +9,7 @@ crate-type = ["dylib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-falco_event = { path = "../falco-plugin/falco_event", version = "0.1.1" }
-falco_plugin = { path = "../falco-plugin/falco_plugin", version = "0.2.0" }
+falco_plugin = { path = "../falco-plugin/falco_plugin", version = "0.3.0" }
 foreign-types = "0.5.0"
 libsystemd-sys = "0.9.3"
 systemd = "0.10.0"

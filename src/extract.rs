@@ -1,12 +1,10 @@
 use crate::JournalFollowPlugin;
-use falco_event::events::types::{EventType, PPME_PLUGINEVENT_E as PluginEvent};
 use falco_plugin::anyhow::{anyhow, Error};
-use falco_plugin::api::ss_plugin_event_input as EventInput;
+use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E as PluginEvent};
 use falco_plugin::extract::{
-    field, ExtractArgType, ExtractFieldInfo, ExtractFieldRequestArg, ExtractPlugin,
+    field, EventInput, ExtractArgType, ExtractFieldInfo, ExtractFieldRequestArg, ExtractPlugin,
+    ExtractRequest,
 };
-use falco_plugin::tables::TableReader;
-use falco_plugin::EventInputExt;
 use std::ffi::CString;
 use systemd::JournalRecord;
 
@@ -36,12 +34,10 @@ impl JournalFollowPlugin {
 
     fn extract_message(
         &mut self,
-        context: &mut Option<JournalRecord>,
+        req: ExtractRequest<Self>,
         _arg: ExtractFieldRequestArg,
-        event: &EventInput,
-        _tables: &TableReader,
     ) -> Result<CString, Error> {
-        let record = self.parse_record(context, event)?;
+        let record = self.parse_record(req.context, req.event)?;
 
         let message = record
             .get("MESSAGE")
@@ -52,12 +48,10 @@ impl JournalFollowPlugin {
 
     fn extract_priority(
         &mut self,
-        context: &mut Option<JournalRecord>,
+        req: ExtractRequest<Self>,
         _arg: ExtractFieldRequestArg,
-        event: &EventInput,
-        _tables: &TableReader,
     ) -> Result<u64, Error> {
-        let record = self.parse_record(context, event)?;
+        let record = self.parse_record(req.context, req.event)?;
 
         let s = record
             .get("PRIORITY")
@@ -67,12 +61,10 @@ impl JournalFollowPlugin {
 
     fn extract_priority_str(
         &mut self,
-        context: &mut Option<JournalRecord>,
+        req: ExtractRequest<Self>,
         arg: ExtractFieldRequestArg,
-        event: &EventInput,
-        tables: &TableReader,
     ) -> Result<CString, Error> {
-        let prio = self.extract_priority(context, arg, event, tables)?;
+        let prio = self.extract_priority(req, arg)?;
 
         let prio = match prio {
             0 => "emerg",
@@ -91,12 +83,10 @@ impl JournalFollowPlugin {
 
     fn extract_facility(
         &mut self,
-        context: &mut Option<JournalRecord>,
+        req: ExtractRequest<Self>,
         _arg: ExtractFieldRequestArg,
-        event: &EventInput,
-        _tables: &TableReader,
     ) -> Result<u64, Error> {
-        let record = self.parse_record(context, event)?;
+        let record = self.parse_record(req.context, req.event)?;
 
         let s = record
             .get("SYSLOG_FACILITY")
@@ -106,12 +96,10 @@ impl JournalFollowPlugin {
 
     fn extract_facility_str(
         &mut self,
-        context: &mut Option<JournalRecord>,
+        req: ExtractRequest<Self>,
         arg: ExtractFieldRequestArg,
-        event: &EventInput,
-        tables: &TableReader,
     ) -> Result<CString, Error> {
-        let fac = self.extract_facility(context, arg, event, tables)?;
+        let fac = self.extract_facility(req, arg)?;
 
         let fac = match fac {
             0 => "kern",
@@ -143,12 +131,10 @@ impl JournalFollowPlugin {
 
     fn extract_transport(
         &mut self,
-        context: &mut Option<JournalRecord>,
+        req: ExtractRequest<Self>,
         _arg: ExtractFieldRequestArg,
-        event: &EventInput,
-        _tables: &TableReader,
     ) -> Result<CString, Error> {
-        let record = self.parse_record(context, event)?;
+        let record = self.parse_record(req.context, req.event)?;
 
         let message = record
             .get("_TRANSPORT")
@@ -159,12 +145,10 @@ impl JournalFollowPlugin {
 
     fn extract_field(
         &mut self,
-        context: &mut Option<JournalRecord>,
+        req: ExtractRequest<Self>,
         arg: ExtractFieldRequestArg,
-        event: &EventInput,
-        _tables: &TableReader,
     ) -> Result<CString, Error> {
-        let record = self.parse_record(context, event)?;
+        let record = self.parse_record(req.context, req.event)?;
         let ExtractFieldRequestArg::String(arg) = arg else {
             return Err(anyhow!("Unexpected argument {:?}", arg));
         };
