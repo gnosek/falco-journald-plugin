@@ -8,6 +8,7 @@ This plugin lets you match Falco rules against journald messages (effectively, a
 
 1. The Rust toolchain: https://rustup.rs/
 2. libsystemd headers, e.g. `sudo apt install libsystemd-dev` for Debian-like systems.
+3. pkg-config, e.g. `sudo apt install pkg-config` for Debian-like systems.
 
 ### Building
 
